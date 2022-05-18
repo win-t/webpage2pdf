@@ -25,7 +25,7 @@ import (
 )
 
 const loopCheckKey = "f87e51e5252d314330469b6ba2206341"
-const tabTimeout = 3 * time.Second
+const tabTimeout = 5 * time.Second
 const region = "ap-southeast-1"
 const bucket = "webpage2pdf"
 const presignExpiration = 12 * time.Hour
@@ -152,7 +152,7 @@ func (s *svc) process(ctx context.Context, req events.APIGatewayV2HTTPRequest) e
 
 		// wait document ready
 		chromedp.EvaluateAsDevTools(``+
-			`window.webpage2htmlwait||`+
+			`window.webpage2pdfwait||`+
 			`new Promise(r=>{if(document.readyState=='complete')r();else window.addEventListener('load',r)})`,
 			nil,
 			func(p *runtime.EvaluateParams) *runtime.EvaluateParams { return p.WithAwaitPromise(true) },

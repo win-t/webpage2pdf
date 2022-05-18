@@ -53,5 +53,5 @@ func (h handler) Invoke(ctx context.Context, in []byte) ([]byte, error) {
 }
 
 func logErr(err error) {
-	log.Print(errors.FormatWithFilterPkgs(err, "main", "webpage2html"))
+	log.Print(errors.FormatWithFilterPkgs(err, "main", "webpage2pdf"))
 }

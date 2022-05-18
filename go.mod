@@ -1,4 +1,4 @@
-module webpage2html
+module webpage2pdf
 
 go 1.18
 
