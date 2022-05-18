@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -109,6 +110,17 @@ func (s *svc) process(ctx context.Context, req events.APIGatewayV2HTTPRequest) e
 
 	if target.Scheme != "http" && target.Scheme != "https" {
 		return text(http.StatusBadRequest, "target must be \"http\" or \"https\"")
+	}
+
+	hostname := target.Hostname()
+	ips, _ := net.LookupIP(hostname)
+	if len(ips) == 0 {
+		return text(http.StatusBadRequest, "cannot resolve "+hostname)
+	}
+	for _, ip := range ips {
+		if !ip.IsGlobalUnicast() {
+			return text(http.StatusBadRequest, hostname+" resolved to non global unicast "+ip.String())
+		}
 	}
 
 	timeoutCtx, cancelTimeout := context.WithTimeout(context.Background(), tabTimeout)
