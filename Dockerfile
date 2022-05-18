@@ -16,6 +16,8 @@ RUN --mount=type=cache,target=/cache go build -o /output/bootstrap -trimpath -ta
 
 FROM chromedp/headless-shell:latest AS app
 
+RUN apt update && apt install ca-certificates -y
+
 COPY --from=builder /output/bootstrap /
 
 USER nobody
