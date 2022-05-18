@@ -48,6 +48,7 @@ func newSvc() *svc {
 	)
 
 	chromeCtx, _ := chromedp.NewExecAllocator(context.Background(), execOpt...)
+	chromeCtx, _ = chromedp.NewContext(chromeCtx)
 
 	if err := chromedp.Run(chromeCtx); err != nil {
 		panic(errors.Errorf("cannot launch headless chrome: %w", err))
@@ -109,7 +110,12 @@ func (s *svc) process(ctx context.Context, req events.APIGatewayV2HTTPRequest) e
 	timeoutCtx, cancelTimeout := context.WithTimeout(context.Background(), tabTimeout)
 	defer cancelTimeout()
 
-	tabCtx, cancelTab := chromedp.NewContext(s.chromeCtx)
+	tabCtx, cancelTabCtx := chromedp.NewContext(s.chromeCtx)
+	defer func() { <-tabCtx.Done() }()
+	cancelTab := func() {
+		chromedp.Cancel(tabCtx)
+		cancelTabCtx()
+	}
 	defer cancelTab()
 
 	go func() {
@@ -185,6 +191,8 @@ func (s *svc) process(ctx context.Context, req events.APIGatewayV2HTTPRequest) e
 		}
 		return internalErr(errors.Trace(err))
 	}
+
+	go cancelTab()
 
 	key := randomName()
 	_, err = s.uploader.Upload(ctx, &s3.PutObjectInput{
