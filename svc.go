@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -30,11 +31,15 @@ const region = "ap-southeast-1"
 const bucket = "webpage2pdf"
 const presignExpiration = 12 * time.Hour
 
+const authEnvKey = "WEBPAGE2PDF_KEY"
+
 type svc struct {
 	chromeCtx context.Context
 
 	uploader *manager.Uploader
 	psClient *s3.PresignClient
+
+	authKey string
 }
 
 func newSvc() *svc {
@@ -69,6 +74,8 @@ func newSvc() *svc {
 
 		uploader: manager.NewUploader(client),
 		psClient: s3.NewPresignClient(client),
+
+		authKey: os.Getenv(authEnvKey),
 	}
 }
 
@@ -78,6 +85,12 @@ func (s *svc) process(ctx context.Context, req events.APIGatewayV2HTTPRequest) e
 	}
 	if req.RequestContext.HTTP.Method != http.MethodGet {
 		return text(http.StatusMethodNotAllowed, "")
+	}
+
+	authHeader := req.Headers["authorization"]
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+	if token != s.authKey {
+		return text(http.StatusUnauthorized, "")
 	}
 
 	query, err := url.ParseQuery(req.RawQueryString)
