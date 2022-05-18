@@ -25,7 +25,6 @@ import (
 	"github.com/payfazz/go-errors/v2"
 )
 
-const loopCheckKey = "f87e51e5252d314330469b6ba2206341"
 const tabTimeout = 5 * time.Second
 const region = "ap-southeast-1"
 const bucket = "webpage2pdf"
@@ -98,10 +97,6 @@ func (s *svc) process(ctx context.Context, req events.APIGatewayV2HTTPRequest) e
 		return text(http.StatusBadRequest, "cannot parse query string")
 	}
 
-	if query.Get(loopCheckKey) != "" {
-		return text(http.StatusBadRequest, "loop detected")
-	}
-
 	targets := query["target"]
 	if len(targets) != 1 {
 		return text(http.StatusBadRequest, "\"target\" param must be exactly one")
@@ -115,10 +110,6 @@ func (s *svc) process(ctx context.Context, req events.APIGatewayV2HTTPRequest) e
 	if target.Scheme != "http" && target.Scheme != "https" {
 		return text(http.StatusBadRequest, "target must be \"http\" or \"https\"")
 	}
-
-	targetParams := target.Query()
-	targetParams.Set(loopCheckKey, "1")
-	target.RawQuery = targetParams.Encode()
 
 	timeoutCtx, cancelTimeout := context.WithTimeout(context.Background(), tabTimeout)
 	defer cancelTimeout()
