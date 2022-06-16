@@ -234,7 +234,7 @@ func (s *svc) process(ctx context.Context, req events.APIGatewayV2HTTPRequest) e
 		return internalErr(errors.Trace(err))
 	}
 
-	return found(presignedURL.URL)
+	return seeOther(presignedURL.URL)
 }
 
 func text(code int, msg string) events.APIGatewayV2HTTPResponse {
@@ -257,9 +257,9 @@ func targetTimeout() events.APIGatewayV2HTTPResponse {
 	return text(http.StatusBadRequest, "cannot process target webpage in "+tabTimeout.Truncate(time.Second).String())
 }
 
-func found(target string) events.APIGatewayV2HTTPResponse {
+func seeOther(target string) events.APIGatewayV2HTTPResponse {
 	return events.APIGatewayV2HTTPResponse{
-		StatusCode: http.StatusFound,
+		StatusCode: http.StatusSeeOther,
 		Headers:    map[string]string{"location": target},
 	}
 }
