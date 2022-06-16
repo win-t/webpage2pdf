@@ -14,7 +14,7 @@ COPY . ./
 RUN --mount=type=cache,target=/cache go build -o /output/bootstrap -trimpath -tags lambda.norpc .
 
 
-FROM chromedp/headless-shell:latest AS app
+FROM chromedp/headless-shell:98.0.4758.102 AS app
 
 RUN apt update && apt install ca-certificates -y
 
