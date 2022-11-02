@@ -47,8 +47,6 @@ func newSvc() *svc {
 	execOpt = append(execOpt, chromedp.DefaultExecAllocatorOptions[:]...)
 	execOpt = append(execOpt,
 		chromedp.NoSandbox,
-		chromedp.Flag("no-zygote", true),
-		chromedp.Flag("in-process-gpu", true),
 		chromedp.Flag("single-process", true),
 	)
 
@@ -267,9 +265,7 @@ func seeOther(target string) events.APIGatewayV2HTTPResponse {
 func randomName() string {
 	var value [16]byte
 	_, err := io.ReadFull(rand.Reader, value[:])
-	if err != nil {
-		panic(err)
-	}
+	errors.Check(err)
 	return hex.EncodeToString(value[:])
 }
 
